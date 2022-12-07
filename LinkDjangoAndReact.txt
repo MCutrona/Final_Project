@@ -1,1 +1,2 @@
 https://www.digitalocean.com/community/tutorials/build-a-to-do-application-using-django-and-react
+https://blog.logrocket.com/react-slider-tutorial/#:~:text=react%2Dslider%20is%20a%20small,headless%20UI%20for%20our%20application.
