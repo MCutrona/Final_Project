@@ -17,7 +17,7 @@ function newCardObj() {
                     {value: 10, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/English_pattern_queen_of_spades.svg/1200px-English_pattern_queen_of_spades.svg.png'},
                     {value: 10, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/English_pattern_king_of_spades.svg/1200px-English_pattern_king_of_spades.svg.png'},
                     {value: 11, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Ace_of_spades.svg/1200px-Ace_of_spades.svg.png'}]
-  return allCards[1]//Math.floor(Math.random() * 13)];
+  return allCards[Math.floor(Math.random() * 13)];
 }
 
 function getHandtotal(handList) {
