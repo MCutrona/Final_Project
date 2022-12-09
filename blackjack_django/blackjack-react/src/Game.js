@@ -1,7 +1,6 @@
 import './App.css';
 import React, { useState } from 'react';
-import { isDisabled } from '@testing-library/user-event/dist/utils';
-import { upload } from '@testing-library/user-event/dist/upload';
+import ReactSlider from "react-slider";
 
 function newCardObj() {
   const allCards = [{value: 2, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Playing_card_spade_2.svg/1200px-Playing_card_spade_2.svg.png'},
@@ -29,66 +28,184 @@ function getHandtotal(handList) {
 }
 
 function App() {
-  const [dealerHand, setDealerHand] = useState([newCardObj(), newCardObj()]);
+  const [dealerHand, setDealerHand] = useState([newCardObj()]);
   const [playerHand, setPlayerHand] = useState([newCardObj(), newCardObj()]);
   const [hitButtonStatus, setHitButtonStatus] = useState(false);
-  const [endGameButtonStatus, setEndGameButtonStatus] = useState('hidden');
+  const [dealButtonState, setDealButtonState] = useState('visible');
+  const [gameState, setGameState] = useState('hidden');
+  const [playAgainButton, setplayAgainButton] = useState('hidden');
+  const [finishButton, setFinishButton] = useState('hidden');
+  const [inputState, setInputState] = useState('visible');
+  const [totalPoints, setTotalPoints] = useState(1000);
+  const [currentValue, setCurrentValue] = useState(parseInt(100)); //bet ammount
+  const [showResult, setShowResult] = useState('');
+  const [result, setResult] = useState();
+  const [name, setName] = useState('default')
 
+  const Payout = () => {
+    if(result == 0){
+      setTotalPoints(totalPoints-currentValue);
+      setCurrentValue(parseInt((totalPoints-currentValue)/10));
+    }
+    else if(result == 1){
+      setTotalPoints(totalPoints+currentValue);
+      setCurrentValue(parseInt((totalPoints+currentValue)/10));
+    }
+    else{
+      setTotalPoints(totalPoints+currentValue*1.5);
+      setCurrentValue(parseInt((totalPoints+currentValue*1.5)/10));
+    }
+  }
+
+  const handleClick = () => {
+    changeGameState();
+  }
+
+  const changePlayAgainState = () => {
+    if(playAgainButton == 'hidden') {
+      setplayAgainButton('visible');
+    }
+    else {
+      setplayAgainButton('hidden');
+    }
+  }
+
+  const changeFinishState = () => {
+    if(finishButton == 'hidden') {
+      setFinishButton('visible');
+    }
+    else {
+      setFinishButton('hidden');
+    }
+  }
+
+  const changeGameState = () => {
+    if(gameState == 'hidden') {
+      setGameState('visible');
+      setDealButtonState('hidden');
+    }
+    else {
+      setGameState('hidden');
+      setDealButtonState('visible');
+    }
+  }
   return (
     <div className="App">
-      {dealerHand.map(card => {
-        return <img src={card.img} alt={card.value} style={{width:120, height:150}}/>
-      })}
-      <p />
-      <button onClick={() => {
-        var tempHand = dealerHand;
-        while(getHandtotal(tempHand) <= 16) {
-          tempHand.push(newCardObj())
-        }
-        setDealerHand(tempHand);
-        console.log(dealerHand);
-        if (getHandtotal(dealerHand) > 21) {
-          //SEND SOMETHING TO THE BETTING APP SAYING WIN
-          console.log('WIN: 1');
-        } else {
-          if (playerHand.length == 2 && getHandtotal(playerHand) == 21) {
-            //SEND SOMETHING TO THE BETTING APP SAYING BLACKJACK
-            console.log('BLACKJACK: 2');
-          } else if (getHandtotal(playerHand) > getHandtotal(dealerHand)) {
-            //SEND SOMETHING TO THE BETTING APP SAYING WIN
-            console.log('WIN: 1');
-          } else {
-            //SEND SOMETHING TO THE BETTING APP SAYING LOSE
-            console.log('LOSE: 0');
-          }
-        }
-      }}
-      >Stay</button>
-
-      <button disabled={hitButtonStatus} onClick={() => {
-        if (getHandtotal(playerHand) > 21) {
-          //SEND SOMETHING TO THE BETTING APP SAYING LOSE
-          console.log('LOSE: 0');
-          setHitButtonStatus(true);
-          setEndGameButtonStatus('visable');
-        }
-        setPlayerHand([...playerHand, newCardObj()]);
-        console.log(getHandtotal(playerHand))
-      }}
-      >Hit</button>
-      <p />
-      {playerHand.map(item => {
-        return <img src={item.img} alt={item.value} style={{width:120, height:150}}/>
+      <div style={{visibility: inputState}}>
+        <input id='name' type='text' maxLength={20} placeholder='Enter Your Name' />
+        <button onClick={() => {
+          setName(document.getElementById("name").value)
+          setInputState('hidden')
+        }}>Submit Name</button>
+      </div>
+        <p>Total Points: {totalPoints}</p>
+        <p>Your wager is {currentValue}</p>
+      <div id='bet' style={{visibility: dealButtonState}}>
+        <ReactSlider 
+          className="customSlider"
+          trackClassName="customSlider-track"
+          thumbClassName="customSlider-thumb"
+          min={1}
+          max={totalPoints}
+          value={currentValue}
+          onChange={(value) => setCurrentValue(value)}
+        />
+        <br />
+        <button onClick={handleClick}>Deal</button>
+        <br />
+      </div>
+      <div id='Game' style={{visibility: gameState}}>
+        {dealerHand.map(card => {
+          return <img src={card.img} alt={card.value} style={{width:120, height:150}}/>
         })}
         <p />
-        <button style={{visibility:{endGameButtonStatus}}}>Play Again</button> 
-        <button style={{visibility:{endGameButtonStatus}}}>Finish</button>
+        <button disabled={hitButtonStatus} onClick={() => {
+          var tempHand = dealerHand;
+          setHitButtonStatus(true);
+          while(getHandtotal(tempHand) <= 16) {
+            tempHand.push(newCardObj())
+          }
+          setDealerHand(tempHand);
+          if (getHandtotal(dealerHand) > 21) {
+            setResult(1);//SEND SOMETHING TO THE BETTING APP SAYING WIN
+            setShowResult("Won " + currentValue);
+            changePlayAgainState();
+            changeFinishState();
+          } else {
+            if (playerHand.length == 2 && getHandtotal(playerHand) == 21) {
+              setResult(2);//SEND SOMETHING TO THE BETTING APP SAYING BLACKJACK
+              setShowResult("Blackjack! Won " + currentValue*1.5);
+              changePlayAgainState();
+              changeFinishState();
+            } else if (getHandtotal(playerHand) > getHandtotal(dealerHand)) {
+              setResult(1);//SEND SOMETHING TO THE BETTING APP SAYING WIN
+              setShowResult("Won " + currentValue);
+              changePlayAgainState();
+              changeFinishState();
+            } else {
+              if(currentValue == totalPoints) {
+                setShowResult('You ran out of points. You lost the game.');
+                changeFinishState();
+              } else {
+              setResult(0);//SEND SOMETHING TO THE BETTING APP SAYING LOSE
+              setShowResult('Lost ' + currentValue);
+              changePlayAgainState();
+              changeFinishState();
+              }            
+            }
+          }
+        }}
+        >Stay</button>
+
+        <button disabled={hitButtonStatus} onClick={() => {
+          let total = getHandtotal(playerHand);
+          let newCard = newCardObj();
+          setPlayerHand([...playerHand, newCard]);
+          total += newCard.value
+          if (total > 21) {
+            setHitButtonStatus(true);
+            if (currentValue == totalPoints) {
+              setShowResult('You ran out of points. You lost the game.');
+                changeFinishState();
+            } else {
+              setResult(0);//SEND SOMETHING TO THE BETTING APP SAYING LOSE
+              setShowResult('Busted! Lost ' + currentValue);
+              changePlayAgainState();
+              changeFinishState();
+            }
+          }
+        }}
+        >Hit</button>
+        <p />
+        {playerHand.map(item => {
+          return <img src={item.img} alt={item.value} style={{width:120, height:150}}/>
+          })}
+      </div>
+        
+        <div id='restart' >
+          <p style={{visibility: 'visible'}}> {showResult} </p>
+          <button style={{visibility: playAgainButton}} onClick={() => {
+            changeGameState();
+            changePlayAgainState();
+            changeFinishState();
+            setShowResult('');
+            Payout();
+            setDealerHand([newCardObj()]);
+            setPlayerHand([newCardObj(), newCardObj()]);
+            setHitButtonStatus(false);
+          }}
+          >Play Again</button> 
+          <button style={{visibility: finishButton}}onClick={() => {
+            Payout();
+            if (totalPoints <= 1000) {
+              console.log('go to leaderboard')
+            } else {
+              console.log('send info to database and go to leaderboard')
+            }
+          }}>Finish</button>
+        </div>
     </div>
   );
 }
 
-//use a state variable to decide wether the Play Again and Finish buttons are hidden
-//need to ask how to send information to another react app -- maybe do this when the play again or finish buttons are pressed
-//need to see how we would restart the game -- This would mean looking into adding play again and finish playing buttons when result is complete
-//make it to where you can only see one of the dealers cards at the begining of the hand
 export default App;
