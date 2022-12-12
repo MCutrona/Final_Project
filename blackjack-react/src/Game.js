@@ -48,6 +48,7 @@ function App() {
   const [dealerHand, setDealerHand] = useState([newCardObj()]);
   const [playerHand, setPlayerHand] = useState([newCardObj(), newCardObj()]);
   const [hitButtonStatus, setHitButtonStatus] = useState(false);
+  const [playAgainButtonStatus, setPlayAgainButtonStatus] = useState(false);
   const [dealButtonState, setDealButtonState] = useState('visible');
   const [gameState, setGameState] = useState('hidden');
   const [playAgainButton, setplayAgainButton] = useState('hidden');
@@ -119,7 +120,7 @@ function App() {
 
   const addValue = () => {
     db.collection('leaderboard').add({name: name, score: totalPoints});
-    console.log("sent to database");
+    console.log("sent to database"); 
   };
 
   return (
@@ -177,13 +178,16 @@ function App() {
               changeFinishState();
             } else {
               if(currentValue == totalPoints) {
+                setResult(0);
                 setShowResult('You ran out of points. You lost the game.');
                 changeFinishState();
+                changePlayAgainState();
+                setPlayAgainButtonStatus(true);
               } else {
-              setResult(0);//SEND SOMETHING TO THE BETTING APP SAYING LOSE
-              setShowResult('Lost ' + currentValue);
-              changePlayAgainState();
-              changeFinishState();
+                setResult(0);//SEND SOMETHING TO THE BETTING APP SAYING LOSE
+                setShowResult('Lost ' + currentValue);
+                changePlayAgainState();
+                changeFinishState();
               }            
             }
           }
@@ -198,8 +202,11 @@ function App() {
           if (total > 21) {
             setHitButtonStatus(true);
             if (currentValue == totalPoints) {
+              setResult(0);
               setShowResult('You ran out of points. You lost the game.');
-                changeFinishState();
+              changeFinishState();
+              changePlayAgainState();
+              setPlayAgainButtonStatus(true);
             } else {
               setResult(0);//SEND SOMETHING TO THE BETTING APP SAYING LOSE
               setShowResult('Busted! Lost ' + currentValue);
@@ -216,7 +223,7 @@ function App() {
       </div>
         <div id='restart' >
           <p style={{visibility: 'visible'}}> {showResult} </p>
-          <button style={{visibility: playAgainButton}} onClick={() => {
+          <button style={{visibility: playAgainButton}} disabled={playAgainButtonStatus} onClick={() => {
             changeGameState();
             changePlayAgainState();
             changeFinishState();
